@@ -1,4 +1,3 @@
-# job_api/manager.py
 from django.contrib.auth.models import BaseUserManager
 from django.utils.translation import gettext_lazy as _
 
@@ -11,12 +10,13 @@ class UserManager(BaseUserManager):
             raise ValueError(_('The Email field must be set'))
         
         if not username and not mobile_number:
-            raise ValueError(_('Either username or phone_number must be set'))
+            raise ValueError(_('Either username or mobile_number must be set'))
 
         email = self.normalize_email(email)
+        extra_fields.setdefault('is_active', True)  # Ensure user is active by default
         user = self.model(email=email, username=username, mobile_number=mobile_number, **extra_fields)
         user.set_password(password)
-        user.save()
+        user.save(using=self._db)
         return user
     
     def create_superuser(self, email, password=None, username=None, mobile_number=None, **extra_fields):
@@ -24,7 +24,7 @@ class UserManager(BaseUserManager):
         Creates and saves a superuser.
         """
         if not username and not mobile_number:
-            raise ValueError(_('Either username or phone_number must be set for a superuser'))
+            raise ValueError(_('Either username or mobile_number must be set for a superuser'))
 
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
@@ -37,9 +37,4 @@ class UserManager(BaseUserManager):
         if extra_fields.get('is_verified') is not True:
             raise ValueError(_('Superuser must be verified'))
 
-        user = self.create_user(email, password, username=username, mobile_number=mobile_number, **extra_fields)
-        user.is_admin = True
-        user.is_staff = True
-        user.save()
-
-        return user
+        return self.create_user(email, password, username=username, mobile_number=mobile_number, **extra_fields)
