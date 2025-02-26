@@ -4,21 +4,20 @@ from .models import User
 
 class CustomUserAdmin(UserAdmin):
     model = User
-    list_display = ('id', 'email', 'username', 'mobile_number', 'is_staff', 'is_verified')
-    search_fields = ('email', 'username', 'mobile_number')
+    list_display = ('id', 'email', 'username', 'is_staff', 'is_verified')
+    search_fields = ('email', 'username')
     ordering = ('email',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal Info', {'fields': ('username', 'mobile_number')}),
+        ('Personal Info', {'fields': ('username',)}),  # Fixed here
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_verified', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'username', 'mobile_number', 'password1', 'password2', 'is_staff', 'is_superuser', 'is_verified')}
+            'fields': ('email', 'username', 'password1', 'password2', 'is_staff', 'is_superuser', 'is_verified')}
         ),
     )
 
-# Register the custom User model with the customized admin panel
 admin.site.register(User, CustomUserAdmin)
