@@ -16,6 +16,7 @@ def get_tokens_for_user(user):
     }
 
 class UserRegistrationView(APIView):
+    renderer_classes = [UserRenderer]
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
