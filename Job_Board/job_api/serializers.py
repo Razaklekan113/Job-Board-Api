@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import User, UserProfile
 from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import check_password
 
 # Registration Serializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -27,12 +28,19 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
-        email = attrs.get('email').lower()
-        password = attrs.get('password')
+        email = attrs.get("email").lower()
+        password = attrs.get("password")
 
-        user = authenticate(email=email, password=password)
+        # Check if user exists
+        user = User.objects.filter(email=email).first()
         if not user:
+            raise serializers.ValidationError({"error": "User does not exist"})
+
+        # Authenticate manually (Django expects 'username' but we use 'email')
+        if not check_password(password, user.password):
             raise serializers.ValidationError({"error": "Invalid credentials"})
+
+        attrs["user"] = user
         return attrs
 
 # User Profile Serializer
@@ -42,12 +50,14 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ['id', 'email', 'full_name', 'phone_number', 'is_active']
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(source="user.email")
     full_name = serializers.CharField(source="user.full_name")
     phone_number = serializers.CharField(source="user.phone_number")
+    
 
     class Meta:
         model = UserProfile
-        fields = ['id', 'full_name', 'phone_number']
+        fields = ['id', "email", 'full_name', 'phone_number']
 
     def update(self, instance, validated_data):
         user_data = validated_data.pop('user', {})
