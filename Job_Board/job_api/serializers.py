@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
+from .models import User, UserProfile
 from django.contrib.auth import authenticate
 
 # Registration Serializer
@@ -8,7 +8,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'password', 'password2']  # Add 'username'
+        fields = ['id', 'email', 'full_name', 'phone_number', 'password', 'password2']
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate(self, data):
@@ -29,8 +29,8 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, attrs):
         email = attrs.get('email').lower()
         password = attrs.get('password')
-        user = authenticate(email=email, password=password)
 
+        user = authenticate(email=email, password=password)
         if not user:
             raise serializers.ValidationError({"error": "Invalid credentials"})
         return attrs
@@ -39,4 +39,27 @@ class LoginSerializer(serializers.Serializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'is_active']
+        fields = ['id', 'email', 'full_name', 'phone_number', 'is_active']
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source="user.full_name")
+    phone_number = serializers.CharField(source="user.phone_number")
+
+    class Meta:
+        model = UserProfile
+        fields = ['id', 'full_name', 'phone_number']
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user', {})
+
+        # Update user fields
+        if 'full_name' in user_data:
+            instance.user.full_name = user_data['full_name']
+        if 'phone_number' in user_data:
+            instance.user.phone_number = user_data['phone_number']
+        instance.user.save()
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()  # Ensure UserProfile is saved
+        return instance
