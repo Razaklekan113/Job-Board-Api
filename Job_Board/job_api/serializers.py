@@ -21,28 +21,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         validated_data.pop('password2')  # Remove password2 before creating the user
         user = User.objects.create_user(**validated_data)
         return user
-
-# Login Serializer
-class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
-
-    def validate(self, attrs):
-        email = attrs.get("email").lower()
-        password = attrs.get("password")
-
-        # Check if user exists
-        user = User.objects.filter(email=email).first()
-        if not user:
-            raise serializers.ValidationError({"error": "User does not exist"})
-
-        # Authenticate manually (Django expects 'username' but we use 'email')
-        if not check_password(password, user.password):
-            raise serializers.ValidationError({"error": "Invalid credentials"})
-
-        attrs["user"] = user
-        return attrs
-
+    
 # User Profile Serializer
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -73,3 +52,26 @@ class UserProfileSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()  # Ensure UserProfile is saved
         return instance
+
+# Login Serializer
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        email = attrs.get("email").lower()
+        password = attrs.get("password")
+
+        # Check if user exists
+        user = User.objects.filter(email=email).first()
+        if not user:
+            raise serializers.ValidationError({"error": "User does not exist"})
+
+        # Authenticate manually (Django expects 'username' but we use 'email')
+        if not check_password(password, user.password):
+            raise serializers.ValidationError({"error": "Invalid credentials"})
+
+        attrs["user"] = user
+        return attrs
+
+
