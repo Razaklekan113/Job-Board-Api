@@ -17,7 +17,6 @@ def get_tokens_for_user(user):
     }
 
 class UserRegistrationView(APIView):
-    renderer_classes = [UserRenderer]
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -26,10 +25,9 @@ class UserRegistrationView(APIView):
             serializer.save()
             return Response({"msg": "Registration Successful"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 class UserProfileView(APIView):
-    renderer_classes = [UserRenderer]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -37,8 +35,7 @@ class UserProfileView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserProfileUpdateView(APIView):
-    renderer_classes = [UserRenderer]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -52,7 +49,6 @@ class UserProfileUpdateView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class UserLoginView(APIView):
     permission_classes = [permissions.AllowAny]

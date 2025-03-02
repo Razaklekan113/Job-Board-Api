@@ -6,10 +6,11 @@ from django.contrib.auth.hashers import check_password
 # Registration Serializer
 class RegisterSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True)
+    role = serializers.ChoiceField(choices=User.ROLE_CHOICES)  # Ensure role selection
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'full_name', 'phone_number', 'password', 'password2']
+        fields = ['id', 'email', 'full_name', 'phone_number', 'password', 'password2', 'role']
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate(self, data):
@@ -18,7 +19,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        validated_data.pop('password2')  # Remove password2 before creating the user
+        validated_data.pop('password2')  # Remove password2 before creating user
         user = User.objects.create_user(**validated_data)
         return user
     
@@ -26,17 +27,17 @@ class RegisterSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'full_name', 'phone_number', 'is_active']
+        fields = ['id', 'email', 'full_name', 'phone_number', 'is_active', 'role']  # Include role
 
 class UserProfileSerializer(serializers.ModelSerializer):
     email = serializers.CharField(source="user.email")
     full_name = serializers.CharField(source="user.full_name")
     phone_number = serializers.CharField(source="user.phone_number")
-    
+    role = serializers.CharField(source="user.role")  # Show user role in response
 
     class Meta:
         model = UserProfile
-        fields = ['id', "email", 'full_name', 'phone_number']
+        fields = ['id', 'email', 'full_name', 'phone_number', 'role']
 
     def update(self, instance, validated_data):
         user_data = validated_data.pop('user', {})
