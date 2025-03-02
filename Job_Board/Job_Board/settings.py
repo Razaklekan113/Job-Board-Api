@@ -42,7 +42,8 @@ INSTALLED_APPS = [
 
      # Third-party apps
     'rest_framework',               
-    'rest_framework_simplejwt',     
+    'rest_framework_simplejwt',    
+    'rest_framework_simplejwt.token_blacklist', 
     'corsheaders',                  
     'cloudinary',                     
     'drf_yasg', 
@@ -153,6 +154,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=25),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+
+    "ROTATE_REFRESH_TOKENS": True,  # Allows rotating refresh tokens
+    "BLACKLIST_AFTER_ROTATION": True,  # Enables blacklisting after rotation
 
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",

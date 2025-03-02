@@ -27,31 +27,29 @@ class RegisterSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'full_name', 'phone_number', 'is_active', 'role']  # Include role
+        fields = ['id', 'email', 'full_name', 'phone_number', 'is_active', 'role']
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    email = serializers.CharField(source="user.email")
-    full_name = serializers.CharField(source="user.full_name")
-    phone_number = serializers.CharField(source="user.phone_number")
-    role = serializers.CharField(source="user.role")  # Show user role in response
+    email = serializers.ReadOnlyField(source="user.email")
+    full_name = serializers.CharField(source="user.full_name", required=False)
+    phone_number = serializers.CharField(source="user.phone_number", required=False)
+    role = serializers.CharField(source="user.role", required=False)  
 
     class Meta:
         model = UserProfile
         fields = ['id', 'email', 'full_name', 'phone_number', 'role']
 
     def update(self, instance, validated_data):
-        user_data = validated_data.pop('user', {})
+        user = instance.user  # Get related User model
 
-        # Update user fields
-        if 'full_name' in user_data:
-            instance.user.full_name = user_data['full_name']
-        if 'phone_number' in user_data:
-            instance.user.phone_number = user_data['phone_number']
-        instance.user.save()
+        # Update user fields correctly
+        if 'user' in validated_data:
+            user_data = validated_data.pop('user')
+            user.full_name = user_data.get('full_name', user.full_name)
+            user.phone_number = user_data.get('phone_number', user.phone_number)
+            user.role = user_data.get('role', user.role)
+            user.save()
 
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()  # Ensure UserProfile is saved
         return instance
 
 # Login Serializer

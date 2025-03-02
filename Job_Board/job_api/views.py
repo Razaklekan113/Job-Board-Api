@@ -44,11 +44,16 @@ class UserProfileUpdateView(APIView):
 
     def patch(self, request):
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
-        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update User fields directly
+        user = request.user
+        user.full_name = request.data.get("full_name", user.full_name)
+        user.phone_number = request.data.get("phone_number", user.phone_number)
+        user.role = request.data.get("role", user.role)
+        user.save()
+
+        serializer = UserProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserLoginView(APIView):
     permission_classes = [permissions.AllowAny]
