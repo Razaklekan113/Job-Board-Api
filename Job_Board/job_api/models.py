@@ -40,4 +40,26 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.email
+    
+
+class Job(models.Model):
+    JOB_TYPE_CHOICES = [
+        ("full_time", "Full-Time"),
+        ("part_time", "Part-Time"),
+        ("remote", "Remote"),
+        ("contract", "Contract"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    company = models.ForeignKey(User, on_delete=models.CASCADE, related_name="jobs")
+    location = models.CharField(max_length=255)
+    salary = models.PositiveIntegerField(null=True, blank=True)
+    job_type = models.CharField(max_length=20, choices=JOB_TYPE_CHOICES, default="full_time")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
 
