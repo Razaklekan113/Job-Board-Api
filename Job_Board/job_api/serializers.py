@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, UserProfile
+from .models import User, UserProfile, Job
 from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import check_password
 
@@ -74,3 +74,7 @@ class LoginSerializer(serializers.Serializer):
         return attrs
 
 
+class JobSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Job
+        fields = "__all__"
