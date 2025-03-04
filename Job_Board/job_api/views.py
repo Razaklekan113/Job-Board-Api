@@ -29,7 +29,7 @@ class UserRegistrationView(APIView):
 
 class UserProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    
+    renderer_classes = [UserRenderer]
 
     def get(self, request):
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -38,7 +38,7 @@ class UserProfileView(APIView):
 
 class UserProfileUpdateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    
+    renderer_classes = [UserRenderer]
 
     def get(self, request):
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
