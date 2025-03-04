@@ -18,6 +18,7 @@ def get_tokens_for_user(user):
 
 class UserRegistrationView(APIView):
     permission_classes = [permissions.AllowAny]
+    renderer_classes = [UserRenderer]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -28,6 +29,7 @@ class UserRegistrationView(APIView):
 
 class UserProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    
 
     def get(self, request):
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -36,6 +38,7 @@ class UserProfileView(APIView):
 
 class UserProfileUpdateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    
 
     def get(self, request):
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -57,6 +60,7 @@ class UserProfileUpdateView(APIView):
 
 class UserLoginView(APIView):
     permission_classes = [permissions.AllowAny]
+    renderer_classes = [UserRenderer]
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -73,6 +77,7 @@ class UserLoginView(APIView):
 
 class UserLogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    renderer_classes = [UserRenderer]
 
     def post(self, request):
         refresh_token = request.data.get("refresh")
