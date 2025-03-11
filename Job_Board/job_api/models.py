@@ -32,14 +32,32 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
-class UserProfile(models.Model):
+
+class EmployerProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="employer_profile")
+    company_name = models.CharField(max_length=255, blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+    industry = models.CharField(max_length=255, blank=True, null=True)
+    company_size = models.IntegerField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.user.email
+        return f"{self.user.email} - Employer"
+
+
+class ApplicantProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="applicant_profile")
+    resume = models.FileField(upload_to="resumes/", blank=True, null=True)
+    skills = models.TextField(blank=True, null=True)
+    experience = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.email} - Applicant"
     
 
 class Job(models.Model):

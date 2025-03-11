@@ -24,33 +24,30 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
     
 # User Profile Serializer
-class ProfileSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'full_name', 'phone_number', 'is_active', 'role']
 
-class UserProfileSerializer(serializers.ModelSerializer):
+
+class EmployerProfileSerializer(serializers.ModelSerializer):
     email = serializers.ReadOnlyField(source="user.email")
-    full_name = serializers.CharField(source="user.full_name", required=False)
-    phone_number = serializers.CharField(source="user.phone_number", required=False)
-    role = serializers.CharField(source="user.role", required=False)  
+    full_name = serializers.ReadOnlyField(source="user.full_name")
+    phone_number = serializers.ReadOnlyField(source="user.phone_number")
 
     class Meta:
-        model = UserProfile
-        fields = ['id', 'email', 'full_name', 'phone_number', 'role']
+        model = EmployerProfile
+        fields = ['id', 'email', 'full_name', 'phone_number', 'company_name', 'website', 'industry', 'company_size']
 
-    def update(self, instance, validated_data):
-        user = instance.user  # Get related User model
 
-        # Update user fields correctly
-        if 'user' in validated_data:
-            user_data = validated_data.pop('user')
-            user.full_name = user_data.get('full_name', user.full_name)
-            user.phone_number = user_data.get('phone_number', user.phone_number)
-            user.role = user_data.get('role', user.role)
-            user.save()
+class ApplicantProfileSerializer(serializers.ModelSerializer):
+    email = serializers.ReadOnlyField(source="user.email")
+    full_name = serializers.ReadOnlyField(source="user.full_name")
+    phone_number = serializers.ReadOnlyField(source="user.phone_number")
 
-        return instance
+    class Meta:
+        model = ApplicantProfile
+        fields = ['id', 'email', 'full_name', 'phone_number', 'resume', 'skills', 'experience']
 
 # Login Serializer
 class LoginSerializer(serializers.Serializer):

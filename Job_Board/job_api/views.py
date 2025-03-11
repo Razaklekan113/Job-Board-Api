@@ -4,8 +4,8 @@ from rest_framework import permissions, status
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User, UserProfile
-from .serializers import RegisterSerializer, LoginSerializer, ProfileSerializer, UserProfileSerializer
+from .models import User, ApplicantProfile, EmployerProfile
+from .serializers import RegisterSerializer, LoginSerializer, EmployerProfileSerializer, ApplicantProfileSerializer
 from .renderers import UserRenderer
 
 # Token generation function
@@ -27,36 +27,50 @@ class UserRegistrationView(APIView):
             return Response({"msg": "Registration Successful"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class UserProfileView(APIView):
+class EmployerProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    renderer_classes = [UserRenderer]
 
     def get(self, request):
-        profile, _ = UserProfile.objects.get_or_create(user=request.user)
-        serializer = UserProfileSerializer(profile)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-class UserProfileUpdateView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    renderer_classes = [UserRenderer]
-
-    def get(self, request):
-        profile, _ = UserProfile.objects.get_or_create(user=request.user)
-        serializer = UserProfileSerializer(profile)
+        if request.user.role != 'employer':
+            return Response({"error": "Only employers can access this profile."}, status=status.HTTP_403_FORBIDDEN)
+        
+        profile, _ = EmployerProfile.objects.get_or_create(user=request.user)
+        serializer = EmployerProfileSerializer(profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, request):
-        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        if request.user.role != 'employer':
+            return Response({"error": "Only employers can update this profile."}, status=status.HTTP_403_FORBIDDEN)
+        
+        profile = request.user.employer_profile
+        serializer = EmployerProfileSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Update User fields directly
-        user = request.user
-        user.full_name = request.data.get("full_name", user.full_name)
-        user.phone_number = request.data.get("phone_number", user.phone_number)
-        user.role = request.data.get("role", user.role)
-        user.save()
 
-        serializer = UserProfileSerializer(profile)
+class ApplicantProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role != 'applicant':
+            return Response({"error": "Only applicants can access this profile."}, status=status.HTTP_403_FORBIDDEN)
+        
+        profile, _ = ApplicantProfile.objects.get_or_create(user=request.user)
+        serializer = ApplicantProfileSerializer(profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        if request.user.role != 'applicant':
+            return Response({"error": "Only applicants can update this profile."}, status=status.HTTP_403_FORBIDDEN)
+        
+        profile = request.user.applicant_profile
+        serializer = ApplicantProfileSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserLoginView(APIView):
     permission_classes = [permissions.AllowAny]
