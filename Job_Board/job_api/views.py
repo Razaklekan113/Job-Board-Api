@@ -8,7 +8,7 @@ from .serializers import (
     RegisterSerializer, LoginSerializer, EmployerProfileSerializer,
     ApplicantProfileSerializer
 )
-from .renderers import UserRenderer
+
 
 # Token generation function
 def get_tokens_for_user(user):
@@ -18,10 +18,10 @@ def get_tokens_for_user(user):
         "access": str(refresh.access_token),
     }
 
+
 # User Registration View
 class UserRegistrationView(APIView):
     permission_classes = [permissions.AllowAny]
-    renderer_classes = [UserRenderer]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -29,6 +29,7 @@ class UserRegistrationView(APIView):
             serializer.save()
             return Response({"msg": "Registration Successful"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # Employer Profile View
 class EmployerProfileView(APIView):
@@ -53,6 +54,7 @@ class EmployerProfileView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # Applicant Profile View
 class ApplicantProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -76,10 +78,10 @@ class ApplicantProfileView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # User Login View
 class UserLoginView(APIView):
     permission_classes = [permissions.AllowAny]
-    renderer_classes = [UserRenderer]
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -89,10 +91,10 @@ class UserLoginView(APIView):
             return Response({"token": token, "msg": "Login Successful"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # User Logout View
 class UserLogoutView(APIView):
     permission_classes = [IsAuthenticated]
-    renderer_classes = [UserRenderer]
 
     def post(self, request):
         refresh_token = request.data.get("refresh")
@@ -105,3 +107,4 @@ class UserLogoutView(APIView):
             return Response({"message": "Successfully logged out"}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+

@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import ApplicantProfile, EmployerProfile, User
-from django.contrib.auth.hashers import check_password
 from django.contrib.auth import authenticate
+from .models import ApplicantProfile, EmployerProfile, User
+
 
 # Registration Serializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -19,14 +19,16 @@ class RegisterSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        validated_data.pop("password2")  # Remove password2 before creating user
+        validated_data.pop("password2")
         return User.objects.create_user(**validated_data)
+
 
 # User Serializer
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "email", "full_name", "phone_number", "is_active", "role"]
+
 
 # Employer Profile Serializer
 class EmployerProfileSerializer(serializers.ModelSerializer):
@@ -36,7 +38,8 @@ class EmployerProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EmployerProfile
-        fields = ["id", "email", "full_name", "phone_number", "company_name", "website", "industry", "company_size"]
+        fields = ["id", "email", "full_name", "phone_number", "company_name", "website", "industry", "company_size", "bio"]
+
 
 # Applicant Profile Serializer
 class ApplicantProfileSerializer(serializers.ModelSerializer):
@@ -46,7 +49,8 @@ class ApplicantProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ApplicantProfile
-        fields = ["id", "email", "full_name", "phone_number", "resume", "skills", "experience"]
+        fields = ["id", "email", "full_name", "phone_number", "resume", "skills", "experience", "education"]
+
 
 # Login Serializer
 class LoginSerializer(serializers.Serializer):
