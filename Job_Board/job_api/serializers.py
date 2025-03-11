@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import ApplicantProfile, EmployerProfile, User, Job
+from .models import ApplicantProfile, EmployerProfile, User
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth import authenticate
 
 # Registration Serializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -9,23 +10,23 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'full_name', 'phone_number', 'password', 'password2', 'role']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ["id", "email", "full_name", "phone_number", "password", "password2", "role"]
+        extra_kwargs = {"password": {"write_only": True}}
 
     def validate(self, data):
-        if data['password'] != data['password2']:
+        if data["password"] != data["password2"]:
             raise serializers.ValidationError({"password2": "Passwords must match."})
         return data
 
     def create(self, validated_data):
-        validated_data.pop('password2')  # Remove password2 before creating user
+        validated_data.pop("password2")  # Remove password2 before creating user
         return User.objects.create_user(**validated_data)
 
 # User Serializer
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'full_name', 'phone_number', 'is_active', 'role']
+        fields = ["id", "email", "full_name", "phone_number", "is_active", "role"]
 
 # Employer Profile Serializer
 class EmployerProfileSerializer(serializers.ModelSerializer):
@@ -35,7 +36,7 @@ class EmployerProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EmployerProfile
-        fields = ['id', 'email', 'full_name', 'phone_number', 'company_name', 'website', 'industry', 'company_size']
+        fields = ["id", "email", "full_name", "phone_number", "company_name", "website", "industry", "company_size"]
 
 # Applicant Profile Serializer
 class ApplicantProfileSerializer(serializers.ModelSerializer):
@@ -45,7 +46,7 @@ class ApplicantProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ApplicantProfile
-        fields = ['id', 'email', 'full_name', 'phone_number', 'resume', 'skills', 'experience']
+        fields = ["id", "email", "full_name", "phone_number", "resume", "skills", "experience"]
 
 # Login Serializer
 class LoginSerializer(serializers.Serializer):
@@ -56,18 +57,9 @@ class LoginSerializer(serializers.Serializer):
         email = attrs.get("email").lower()
         password = attrs.get("password")
 
-        user = User.objects.filter(email=email).first()
+        user = authenticate(email=email, password=password)
         if not user:
-            raise serializers.ValidationError({"error": "User does not exist"})
-
-        if not check_password(password, user.password):
             raise serializers.ValidationError({"error": "Invalid credentials"})
 
         attrs["user"] = user
         return attrs
-
-# Job Serializer
-class JobSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Job
-        fields = "__all__"
